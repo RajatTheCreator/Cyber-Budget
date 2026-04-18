@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber Budget AI | Student Edition</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500&display=swap" rel="stylesheet">
+
+    <style>
+        /* ================= CSS VARIABLES & RESET ================= */
+        :root {
+            --neon-purple: #8a2be2;
+            --neon-cyan: #00f5ff;
+            --dark-bg: #05010f;
+            --glass: rgba(255, 255, 255, 0.05);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Rajdhani', sans-serif;
+        }
+
+        body {
+            background: var(--dark-bg);
+            color: white;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        h1, h2, h3, .orbitron {
+            font-family: 'Orbitron', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        /* ================= 3D BACKGROUND ================= */
+        #bg3d {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -2;
+        }
+
+        .overlay {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, transparent, #000);
+            z-index: -1;
+        }
+
+        /* ================= LOGIN ================= */
+        #login-page {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: 0.8s ease-in-out;
+        }
+
+        .login-box {
+            background: var(--glass);
+            padding: 40px;
+            border-radius: 20px;
+            border: 1px solid var(--neon-purple);
+            text-align: center;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 0 30px rgba(138, 43, 226, 0.3);
+            width: 350px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #333;
+            border-radius: 8px;
+            background: #000;
+            color: var(--neon-cyan);
+            outline: none;
+        }
+
+        input:focus { border-color: var(--neon-cyan); }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 15px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(90deg, var(--neon-purple), var(--neon-cyan));
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            text-transform: uppercase;
+        }
+
+        button:hover {
+            transform: scale(1.03);
+            box-shadow: 0 0 20px var(--neon-purple);
+        }
+
+        /* ================= DASHBOARD LAYOUT ================= */
+        #dashboard {
+            display: none;
+            height: 100vh;
+            opacity: 0;
+            transition: 1s;
+        }
+
+        .container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 250px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 30px 20px;
+            border-right: 1px solid var(--neon-purple);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar h2 { font-size: 1.2rem; color: var(--neon-cyan); margin-bottom: 30px; }
+
+        .sidebar li {
+            list-style: none;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar li:hover, .sidebar li.active {
+            background: rgba(138, 43, 226, 0.2);
+            color: var(--neon-cyan);
+            border-left: 4px solid var(--neon-cyan);
+        }
+
+        /* MAIN CONTENT */
+        .main {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--neon-purple) transparent;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--glass);
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid rgba(138, 43, 226, 0.2);
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card h3 { font-size: 0.9rem; margin-bottom: 15px; color: #ccc; }
+
+        .stat { font-size: 2rem; font-weight: bold; color: var(--neon-cyan); }
+
+        /* AI INSIGHT BOX */
+        .ai-box {
+            background: linear-gradient(135deg, rgba(138, 43, 226, 0.1), rgba(0, 245, 255, 0.1));
+            border: 1px dashed var(--neon-cyan);
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 10px;
+        }
+
+        /* PROGRESS BAR */
+        .progress-container {
+            height: 12px;
+            background: #111;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+
+        #goalBar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--neon-purple), var(--neon-cyan));
+            border-radius: 10px;
+            transition: 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* TABLES/LISTS */
+        .transaction-list {
+            margin-top: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .t-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            border-bottom: 1px solid #222;
+        }
+
+        .t-item:hover { background: rgba(255,255,255,0.02); }
+
+    </style>
+</head>
+
+<body>
+
+    <canvas id="bg3d"></canvas>
+    <div class="overlay"></div>
+
+    <div id="login-page">
+        <div class="login-box">
+            <h1 class="orbitron" style="font-size: 1.5rem; margin-bottom: 10px;">Cyber Budget</h1>
+            <p style="font-size: 0.8rem; color: #888; margin-bottom: 20px;">AI-POWERED STUDENT FINANCE</p>
+            <input id="user" placeholder="Student ID/Username">
+            <input id="pass" type="password" placeholder="Access Key">
+            <button onclick="login()">Initialize System</button>
+        </div>
+    </div>
+
+    <div id="dashboard">
+        <div class="container">
+            <div class="sidebar">
+                <h2>CORE_OS</h2>
+                <li class="active" onclick="show('dash')">📊 Overview</li>
+                <li onclick="show('goal')">🎯 Savings Goal</li>
+                <li onclick="show('trans')">🧾 History</li>
+                <div style="margin-top: auto;">
+                    <button onclick="resetData()" style="background: #ef444433; color: #ef4444; border: 1px solid #ef4444;">Wipe Data</button>
+                </div>
+            </div>
+
+            <div class="main">
+                <div id="dash">
+                    <h2 class="orbitron" style="margin-bottom: 25px;">Dashboard</h2>
+                    
+                    <div class="grid">
+                        <div class="card">
+                            <h3>Current Balance</h3>
+                            <div class="stat">₹<span id="balance">0</span></div>
+                            <div style="margin-top:15px">
+                                <input id="incomeInput" type="number" placeholder="Add Pocket Money/Allowance">
+                                <button onclick="setIncome()">Update Funds</button>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <h3>Quick Log (Expense)</h3>
+                            <select id="category">
+                                <option value="Canteen/Food">🍔 Canteen & Food</option>
+                                <option value="Stationary/Books">📚 Books & Stationary</option>
+                                <option value="Transport">🚌 Transport</option>
+                                <option value="Subscriptions">🎧 Subscriptions (Spotify/Netflix)</option>
+                                <option value="Gaming/Leisure">🎮 Gaming & Fun</option>
+                                <option value="Other">🛠️ Misc</option>
+                            </select>
+                            <input id="amount" type="number" placeholder="Amount (₹)">
+                            <button onclick="addExpense()">Add Transaction</button>
+                        </div>
+
+                        <div class="card">
+                            <h3>AI Student Insight</h3>
+                            <div class="ai-box">
+                                <p id="ai-tip">Awaiting data to analyze spending patterns...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid" style="margin-top: 20px;">
+                        <div class="card">
+                            <h3>Spending Breakdown</h3>
+                            <div style="height: 250px;"><canvas id="pieChart"></canvas></div>
+                        </div>
+                        <div class="card">
+                            <h3>Weekly Trend</h3>
+                            <div style="height: 250px;"><canvas id="lineChart"></canvas></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="goal" style="display:none;">
+                    <h2 class="orbitron">Savings Goal</h2>
+                    <div class="card" style="margin-top:20px">
+                        <h3>Set Your Target (e.g., New Laptop, Trip)</h3>
+                        <input id="goalName" placeholder="What are you saving for?">
+                        <input id="goalTarget" type="number" placeholder="Target Amount (₹)">
+                        <button onclick="updateGoalSettings()">Set Goal</button>
+                    </div>
+                    
+                    <div class="card" style="margin-top:20px">
+                        <h3 id="displayGoalName">Your Progress</h3>
+                        <div class="stat">₹<span id="saved">0</span> / ₹<span id="targetVal">10000</span></div>
+                        <div class="progress-container"><div id="goalBar"></div></div>
+                        <p id="goalStatus" style="color: var(--neon-cyan);"></p>
+                    </div>
+                </div>
+
+                <div id="trans" style="display:none;">
+                    <h2 class="orbitron">Transaction History</h2>
+                    <div class="card" style="margin-top:20px">
+                        <div class="transaction-list" id="transactions">
+                            </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* ================= 3D BACKGROUND (THREEE.JS) ================= */
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById("bg3d"), alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+        const starGeo = new THREE.BufferGeometry();
+        const starCount = 600;
+        const starPos = new Float32Array(starCount * 3);
+        for(let i=0; i<starCount*3; i++) { starPos[i] = (Math.random() - 0.5) * 100; }
+        starGeo.setAttribute("position", new THREE.BufferAttribute(starPos, 3));
+        const starMat = new THREE.PointsMaterial({ size: 0.15, color: 0x8a2be2 });
+        const stars = new THREE.Points(starGeo, starMat);
+        scene.add(stars);
+
+        camera.position.z = 5;
+
+        function animate() {
+            requestAnimationFrame(animate);
+            stars.rotation.y += 0.001;
+            stars.rotation.x += 0.0005;
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        /* ================= APP LOGIC ================= */
+        let data = JSON.parse(localStorage.getItem('cyberBudgetData')) || {
+            income: 0,
+            expenses: [],
+            goalTarget: 10000,
+            goalName: "New Gadget"
+        };
+
+        let pieChart, lineChart;
+
+        function login() {
+            const user = document.getElementById("user").value;
+            if(!user) return alert("Identify yourself, Student.");
+            
+            document.getElementById("login-page").style.display = "none";
+            document.getElementById("dashboard").style.display = "flex";
+            setTimeout(() => { document.getElementById("dashboard").style.opacity = "1"; }, 100);
+            updateUI();
+        }
+
+        function setIncome() {
+            const val = Number(document.getElementById("incomeInput").value);
+            if(val > 0) {
+                data.income += val;
+                document.getElementById("incomeInput").value = "";
+                saveAndRefresh();
+            }
+        }
+
+        function addExpense() {
+            const cat = document.getElementById("category").value;
+            const amt = Number(document.getElementById("amount").value);
+            if(amt > 0) {
+                data.expenses.push({ category: cat, amount: amt, date: new Date().toLocaleDateString() });
+                document.getElementById("amount").value = "";
+                saveAndRefresh();
+            }
+        }
+
+        function updateGoalSettings() {
+            data.goalName = document.getElementById("goalName").value || "Savings";
+            data.goalTarget = Number(document.getElementById("goalTarget").value) || 10000;
+            saveAndRefresh();
+        }
+
+        function saveAndRefresh() {
+            localStorage.setItem('cyberBudgetData', JSON.stringify(data));
+            updateUI();
+        }
+
+        function resetData() {
+            if(confirm("Wipe all financial records?")) {
+                localStorage.clear();
+                location.reload();
+            }
+        }
+
+        function updateUI() {
+            const totalExp = data.expenses.reduce((s, e) => s + e.amount, 0);
+            const balance = data.income - totalExp;
+
+            document.getElementById("balance").innerText = balance.toLocaleString();
+            document.getElementById("saved").innerText = balance > 0 ? balance.toLocaleString() : 0;
+            document.getElementById("targetVal").innerText = data.goalTarget.toLocaleString();
+            document.getElementById("displayGoalName").innerText = data.goalName;
+
+            // Update Progress Bar
+            let percent = (balance / data.goalTarget) * 100;
+            if(percent < 0) percent = 0;
+            if(percent > 100) percent = 100;
+            document.getElementById("goalBar").style.width = percent + "%";
+            document.getElementById("goalStatus").innerText = percent >= 100 ? "Goal Reached! 🚀" : `${Math.floor(percent)}% of target acquired.`;
+
+            // Update Transaction List
+            const tList = document.getElementById("transactions");
+            tList.innerHTML = data.expenses.slice().reverse().map(e => `
+                <div class="t-item">
+                    <span>${e.category} <small style="color:#666">(${e.date})</small></span>
+                    <span style="color:#ff4444">- ₹${e.amount}</span>
+                </div>
+            `).join('');
+
+            updateAIInsight(totalExp, balance);
+            drawCharts();
+        }
+
+        function updateAIInsight(total, balance) {
+            const tipBox = document.getElementById("ai-tip");
+            if (data.expenses.length === 0) {
+                tipBox.innerText = "Systems ready. Input your first expense to begin analysis.";
+                return;
+            }
+
+            if (balance < 500) {
+                tipBox.innerText = "CRITICAL: Funds low. Suggest cutting down on 'Gaming/Leisure' for 1 week.";
+            } else if (total > data.income * 0.7) {
+                tipBox.innerText = "WARNING: You've spent 70% of your allowance. Switch to 'Economy Mode'.";
+            } else {
+                tipBox.innerText = "OPTIMAL: Spending within safe limits. You are on track for your goal!";
+            }
+        }
+
+        function drawCharts() {
+            const ctxPie = document.getElementById("pieChart");
+            const ctxLine = document.getElementById("lineChart");
+
+            const cats = {};
+            data.expenses.forEach(e => cats[e.category] = (cats[e.category] || 0) + e.amount);
+
+            if(pieChart) pieChart.destroy();
+            if(lineChart) lineChart.destroy();
+
+            pieChart = new Chart(ctxPie, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(cats),
+                    datasets: [{
+                        data: Object.values(cats),
+                        backgroundColor: ['#8a2be2', '#00f5ff', '#ff00ff', '#facc15', '#4ade80'],
+                        borderWidth: 0
+                    }]
+                },
+                options: { maintainAspectRatio: false, plugins: { legend: { labels: { color: '#fff' } } } }
+            });
+
+            lineChart = new Chart(ctxLine, {
+                type: 'line',
+                data: {
+                    labels: data.expenses.map((_, i) => i + 1),
+                    datasets: [{
+                        label: 'Expense Flow',
+                        data: data.expenses.map(e => e.amount),
+                        borderColor: '#00f5ff',
+                        tension: 0.4,
+                        fill: true,
+                        backgroundColor: 'rgba(0, 245, 255, 0.1)'
+                    }]
+                },
+                options: { maintainAspectRatio: false, scales: { y: { ticks: { color: '#666' } }, x: { ticks: { color: '#666' } } } }
+            });
+        }
+
+        function show(id) {
+            ["dash", "goal", "trans"].forEach(s => document.getElementById(s).style.display = "none");
+            document.getElementById(id).style.display = "block";
+            
+            // Update Active Class
+            document.querySelectorAll('.sidebar li').forEach(li => li.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+        }
+
+        // Handle Window Resize for 3D
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>

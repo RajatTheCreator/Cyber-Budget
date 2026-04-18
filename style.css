@@ -1,0 +1,247 @@
+/* ================= GLOBAL VARIABLES & FONTS ================= */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap');
+
+:root {
+    --neon-purple: #8a2be2;
+    --neon-cyan: #00f5ff;
+    --bg-dark: #05010f;
+    --glass-bg: rgba(255, 255, 255, 0.05);
+    --glass-border: rgba(138, 43, 226, 0.3);
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ================= RESET & BASE STYLES ================= */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Rajdhani', sans-serif;
+}
+
+body {
+    background: var(--bg-dark);
+    color: white;
+    height: 100vh;
+    overflow: hidden; /* Keeps the dashboard contained */
+}
+
+h1, h2, h3 {
+    font-family: 'Orbitron', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+}
+
+/* ================= 3D BACKGROUND LAYER ================= */
+#bg3d {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -2;
+}
+
+.overlay {
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(circle at center, transparent, rgba(0,0,0,0.8));
+    z-index: -1;
+}
+
+/* ================= LOGIN UI ================= */
+#login-page {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.login-box {
+    background: var(--glass-bg);
+    padding: 40px;
+    border-radius: 20px;
+    border: 1px solid var(--neon-purple);
+    backdrop-filter: blur(15px);
+    width: 360px;
+    text-align: center;
+    box-shadow: 0 0 40px rgba(138, 43, 226, 0.2);
+    animation: fadeIn 0.8s ease-out;
+}
+
+/* ================= INPUTS & BUTTONS ================= */
+input, select {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border-radius: 8px;
+    border: 1px solid #222;
+    background: rgba(0, 0, 0, 0.6);
+    color: var(--neon-cyan);
+    outline: none;
+    transition: var(--transition-smooth);
+}
+
+input:focus, select:focus {
+    border-color: var(--neon-cyan);
+    box-shadow: 0 0 10px rgba(0, 245, 255, 0.3);
+}
+
+button {
+    width: 100%;
+    padding: 12px;
+    margin-top: 15px;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(90deg, var(--neon-purple), var(--neon-cyan));
+    color: #000;
+    font-weight: 700;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: var(--transition-smooth);
+}
+
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px var(--neon-purple);
+}
+
+/* ================= DASHBOARD STRUCTURE ================= */
+#dashboard {
+    display: none;
+    height: 100vh;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+.container {
+    display: flex;
+    width: 100%;
+    height: 100%;
+}
+
+/* SIDEBAR */
+.sidebar {
+    width: 260px;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(20px);
+    padding: 30px 20px;
+    border-right: 1px solid var(--glass-border);
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar li {
+    list-style: none;
+    padding: 15px;
+    margin: 8px 0;
+    cursor: pointer;
+    border-radius: 10px;
+    font-weight: 500;
+    transition: var(--transition-smooth);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.sidebar li:hover, .sidebar li.active {
+    background: rgba(138, 43, 226, 0.15);
+    color: var(--neon-cyan);
+    transform: translateX(5px);
+}
+
+/* MAIN CONTENT AREA */
+.main {
+    flex: 1;
+    padding: 40px;
+    overflow-y: auto;
+}
+
+.main::-webkit-scrollbar {
+    width: 5px;
+}
+
+.main::-webkit-scrollbar-thumb {
+    background: var(--neon-purple);
+    border-radius: 10px;
+}
+
+/* ================= CARDS & GRIDS ================= */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 25px;
+    margin-bottom: 25px;
+}
+
+.card {
+    background: var(--glass-bg);
+    padding: 25px;
+    border-radius: 18px;
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(10px);
+    transition: var(--transition-smooth);
+}
+
+.card:hover {
+    border-color: var(--neon-cyan);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.stat {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--neon-cyan);
+    margin: 10px 0;
+}
+
+/* ================= SPECIAL FEATURES ================= */
+/* AI INSIGHT BOX */
+.ai-box {
+    background: linear-gradient(135deg, rgba(138, 43, 226, 0.1), rgba(0, 245, 255, 0.1));
+    border: 1px dashed var(--neon-cyan);
+    padding: 15px;
+    border-radius: 12px;
+    font-style: italic;
+    color: #eee;
+}
+
+/* PROGRESS BAR */
+.progress-container {
+    height: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    margin: 20px 0;
+    overflow: hidden;
+}
+
+#goalBar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--neon-purple), var(--neon-cyan));
+    box-shadow: 0 0 15px var(--neon-cyan);
+    transition: width 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* TRANSACTION LIST */
+.transaction-list {
+    margin-top: 10px;
+}
+
+.t-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 0.95rem;
+}
+
+.t-item span:last-child {
+    font-weight: 700;
+    color: #ff4444;
+}
+
+/* ================= ANIMATIONS ================= */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
